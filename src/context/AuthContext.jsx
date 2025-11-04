@@ -1,4 +1,4 @@
-import { createContext, useState, useContext } from 'react';
+import { createContext, useState, useContext, useEffect } from 'react';
 import { registerUser } from '../api/auth';
 
 const AuthContext = createContext();
@@ -6,39 +6,53 @@ const AuthContext = createContext();
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {
-        throw new Error('useAuth must be used within an AuthProvider');
+        throw new Error('useAuth debe usarse dentro de un AuthProvider');
     }
     return context;
 };
 
-
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [errors, setError] = useState([]);
+    const [authErrors, setAuthErrors] = useState([]);
+    const [loading, setLoading] = useState(false);
 
-    const signup = async (user) => {
+    useEffect(() => {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            setUser(JSON.parse(storedUser));
+            setIsAuthenticated(true);
+        }
+    }, []);
+
+    const signup = async (userData) => {
+        setLoading(true);
         try {
-            const response = await registerUser(user);
-            console.log('Usuario registrado exitosamente:', response);
+            const response = await registerUser(userData);
             setUser(response);
             setIsAuthenticated(true);
+            localStorage.setItem('user', JSON.stringify(response));
+            setAuthErrors([]);
         } catch (error) {
-            // Extraer solo el mensaje del response
-            const errorMsg = error.message;
-            console.log('Error al registrar usuario:', errorMsg);
-            setError([errorMsg]); // Guardamos solo el mensaje
-
+            const errorMsg = error.response?.data?.mensaje || error.message || 'Error desconocido';
+            setAuthErrors([errorMsg]);
+        } finally {
+            setLoading(false);
         }
-    }
+    };
+
+    const clearErrors = () => setAuthErrors([]);
+
     return (
         <AuthContext.Provider value={{
             signup,
             user,
             isAuthenticated,
-            errors
+            authErrors,
+            clearErrors,
+            loading
         }}>
             {children}
         </AuthContext.Provider>
     );
-}
+};

@@ -16,35 +16,41 @@ const Registro = () => {
     }
   });
 
-  const { signup, isAuthenticated, errors: RegistroErrors } = useAuth();
+  const { signup, isAuthenticated, authErrors, loading } = useAuth();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/tareas');
-    }
-  }, [isAuthenticated, navigate]);
+  const [showModal, setShowModal] = useState(false);
 
   const onSubmit = async (values) => {
-    setLoading(true);
-    try {
-      await signup(values);
-    } catch (error) {
-      console.error('Error al registrar usuario:', error);
-    } finally {
-      setLoading(false);
+    await signup(values);
+    if (!authErrors.length) {
+      setShowModal(true);
     }
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 relative">
-      {/* Errores del backend centrados arriba */}
-      {RegistroErrors?.length > 0 && (
+      {/* Errores del backend */}
+      {authErrors?.length > 0 && (
         <div className="absolute top-4 w-full max-w-md bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-md text-center">
-          {RegistroErrors.map((error, index) => (
+          {authErrors.map((error, index) => (
             <span key={index} className="block">{error}</span>
           ))}
+        </div>
+      )}
+
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm text-center">
+            <h2 className="text-xl font-bold mb-4">¡Registro exitoso!</h2>
+            <p className="mb-6">Tu cuenta ha sido creada correctamente.</p>
+            <button
+              onClick={() => navigate('/login')}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+            >
+              Ir a Login
+            </button>
+          </div>
         </div>
       )}
 
@@ -133,9 +139,7 @@ const Registro = () => {
           type="submit"
           disabled={loading}
           className={`w-full font-semibold py-2 rounded-lg transition duration-300 ${
-            loading
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-blue-600 hover:bg-blue-700 text-white'
+            loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'
           }`}
         >
           {loading ? 'Registrando...' : 'Registrarse'}
