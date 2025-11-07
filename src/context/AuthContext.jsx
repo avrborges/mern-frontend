@@ -11,18 +11,18 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authErrors, setAuthErrors] = useState({ general: [], fields: {} });
   const [loadingLogin, setLoadingLogin] = useState(false);
   const [loadingSignup, setLoadingSignup] = useState(false);
+  const [loadingSession, setLoadingSession] = useState(true); // ✅ Estado para inicialización
 
   // ✅ Inicializar sesión desde localStorage
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       setUser(JSON.parse(storedUser));
-      setIsAuthenticated(true);
     }
+    setLoadingSession(false);
   }, []);
 
   // ✅ Mapear errores del backend
@@ -41,14 +41,13 @@ export const AuthProvider = ({ children }) => {
     return newErrors;
   };
 
-  // ✅ Registro de usuario
+  // ✅ Registro
   const signup = async (userData) => {
     setLoadingSignup(true);
-    setAuthErrors({ general: [], fields: {} }); // limpiar errores previos
+    setAuthErrors({ general: [], fields: {} });
     try {
       const response = await registerUser(userData);
       setUser(response);
-      setIsAuthenticated(true);
       localStorage.setItem('user', JSON.stringify(response));
     } catch (error) {
       setAuthErrors(mapBackendErrors(error));
@@ -57,14 +56,13 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ✅ Login de usuario
+  // ✅ Login
   const signIn = async (credentials) => {
     setLoadingLogin(true);
-    setAuthErrors({ general: [], fields: {} }); // limpiar errores previos
+    setAuthErrors({ general: [], fields: {} });
     try {
       const response = await loginUser(credentials);
       setUser(response);
-      setIsAuthenticated(true);
       localStorage.setItem('user', JSON.stringify(response));
     } catch (error) {
       setAuthErrors(mapBackendErrors(error));
@@ -76,7 +74,6 @@ export const AuthProvider = ({ children }) => {
   // ✅ Logout
   const logout = () => {
     setUser(null);
-    setIsAuthenticated(false);
     localStorage.removeItem('user');
   };
 
@@ -103,12 +100,13 @@ export const AuthProvider = ({ children }) => {
       signIn,
       logout,
       user,
-      isAuthenticated,
+      isAuthenticated: !!user, // ✅ Derivado del estado real
       authErrors,
       clearErrors,
       clearFieldError,
       loadingLogin,
-      loadingSignup
+      loadingSignup,
+      loadingSession
     }}>
       {children}
     </AuthContext.Provider>

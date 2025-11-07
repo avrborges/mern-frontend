@@ -1,9 +1,11 @@
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate, Link } from 'react-router-dom';
 
 const Login = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const { signIn, authErrors, clearFieldError, loading } = useAuth();
+  const navigate = useNavigate();
 
   const onSubmit = handleSubmit((values) => {
     signIn(values);
@@ -87,7 +89,13 @@ const Login = () => {
         >
           {loading ? 'Cargando...' : 'Loguearse'}
         </button>
+              
+        <p className="text-center mt-4 text-gray-400">
+          ¿No tienes cuenta? <Link to="/registro" className="text-purple-400 hover:text-purple-300 font-semibold">Regístrate aquí</Link>
+        </p>
+
       </form>
+
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../context/AuthContext';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const Registro = () => {
   const {
@@ -146,6 +146,17 @@ const Registro = () => {
         >
           {loading ? 'Registrando...' : 'Registrarse'}
         </button>
+        
+        {/* ✅ Párrafo con enlace */}
+        <p className="mt-4 text-center text-gray-300">
+          ¿Ya tienes una cuenta?{" "}
+          <Link
+            to="/login"
+            className="text-purple-400 hover:text-purple-300 font-semibold transition"
+          >
+            Inicia sesión aquí
+          </Link>
+        </p>
       </form>
     </div>
   );
